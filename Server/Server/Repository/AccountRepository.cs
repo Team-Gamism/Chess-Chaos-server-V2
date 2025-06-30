@@ -5,17 +5,31 @@ using Server.Repository.Interface;
 
 namespace Server.Repository;
 
-public class AuthRepository : IAuthRepository
+public class AccountRepository : IAccountRepository
 {
     private readonly string _connectionString;
 
-    public AuthRepository(string connectionString)
+    public AccountRepository(IConfiguration config)
     {
-        _connectionString = connectionString;
+        _connectionString = config.GetConnectionString("AccountDb");
     }
-    
-    private MySqlConnection CreateConnection => new(_connectionString);
-    
+    private MySqlConnection CreateConnection() => new(_connectionString);
+
+    public async Task<bool> CheckExistsAsync(string playerId, string email)
+    {
+        const string sql = @"
+                    select count(1)
+                    from player_account_data
+                    where player_id = @PlayerId or email = @Email";
+        
+        await using var connection = CreateConnection();
+        await connection.OpenAsync();
+        
+        var count = await connection.ExecuteScalarAsync<int>(sql, new { PlayerId = playerId, Email = email });
+        
+        return count > 0;
+    }
+
     public async Task CreatePlayerAccountAsync(PlayerAccountData account)
     {
         const string sql = @"
@@ -24,7 +38,7 @@ public class AuthRepository : IAuthRepository
                     values
                     (@Id, @PlayerId, @PlayerName, @Password, @Email, @CreatedAt)";
 
-        await using var connection = CreateConnection;
+        await using var connection = CreateConnection();
         await connection.OpenAsync();
         await connection.ExecuteAsync(sql, account);
     }
@@ -37,7 +51,7 @@ public class AuthRepository : IAuthRepository
                     where player_id = @Id
                     limit 1";
         
-        await using var connection = CreateConnection;
+        await using var connection = CreateConnection();
         await connection.OpenAsync();
         return await connection.QueryFirstOrDefaultAsync<PlayerAccountData>(sql, new {Id = id});
     }
@@ -50,7 +64,7 @@ public class AuthRepository : IAuthRepository
                     where email = @Email
                     limit 1";
         
-        await using var connection = CreateConnection;
+        await using var connection = CreateConnection();
         await connection.OpenAsync();
         return await connection.QueryFirstOrDefaultAsync<PlayerAccountData>(sql, new {Email = email});
     }
