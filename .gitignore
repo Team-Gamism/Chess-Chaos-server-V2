@@ -1,0 +1,76 @@
+# .NET 빌드 결과물
+bin/
+obj/
+out/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider
+.idea/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# ASP.NET Core secrets
+secrets.json
+**/appsettings.*.json
+
+# Logs
+*.log
+logs/
+
+# Build result
+project.lock.json
+project.fragment.lock.json
+
+# NuGet
+*.nupkg
+packages/
+.nuget/
+
+# Temporary files
+~$*
+*.tmp
+
+# Test results
+TestResults/
+*.trx
+
+# Publish 폴더
+publish/
+dist/
+
+# DotCover
+.idea.DotSettings
+*.dotCover
+
+# ReSharper
+_ReSharper*/
+*.DotSettings.user
+
+# Mac 시스템 파일
+.DS_Store
+
+# Windows Thumbnail DB
+Thumbs.db
+
+# 환경별 설정
+.env
+.env.*
+
+# JetBrains Rider
+.idea/
+
+# 기타 백업 파일
+*.bak
+*.old
+*.orig
+
+# LocalDB
+*.mdf
+*.ldf
