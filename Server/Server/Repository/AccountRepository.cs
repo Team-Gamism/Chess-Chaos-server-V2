@@ -20,7 +20,8 @@ public class AccountRepository : IAccountRepository
         const string sql = @"
                     select count(1)
                     from player_account_data
-                    where player_id = @PlayerId or email = @Email";
+                    where player_id = @PlayerId or email = @Email;
+                    ";
         
         await using var connection = CreateConnection();
         await connection.OpenAsync();
@@ -30,13 +31,14 @@ public class AccountRepository : IAccountRepository
         return count > 0;
     }
 
-    public async Task CreatePlayerAccountAsync(PlayerAccountData account)
+    public async Task AddPlayerAccountAsync(PlayerAccountData account)
     {
         const string sql = @"
                     insert into player_account_data
                     (id, player_id, player_name, password, email, created_at) 
                     values
-                    (@Id, @PlayerId, @PlayerName, @Password, @Email, @CreatedAt)";
+                    (@Id, @PlayerId, @PlayerName, @Password, @Email, @CreatedAt);
+                    ";
 
         await using var connection = CreateConnection();
         await connection.OpenAsync();
