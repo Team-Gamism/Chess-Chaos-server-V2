@@ -69,12 +69,11 @@ public class SessionRepository : ISessionRepository
     public async Task<bool> ExpireSessionAsync(string sessionId)
     {
         const string sql = @"
-                    update player_account_session
-                    set expired_at = NOW()
+                    delete from player_account_session 
                     where session_id = @SessionId;";
         
         await using var connection = CreateConnection();
-        connection.OpenAsync();
+        await connection.OpenAsync();
         
         var rows = await connection.ExecuteAsync(sql, new { SessionId = sessionId });
         return rows > 0;

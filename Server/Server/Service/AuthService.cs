@@ -68,4 +68,11 @@ public class AuthService : IAuthService
             CreatedAt = newPlayer.CreatedAt
         };
     }
+
+    public async Task LogoutAsync(string sessionId)
+    {
+        var result = await _sessionService.ExpireSessionAsync(sessionId);
+        if (!result)
+            throw new Exception("Session not found");
+    }
 }

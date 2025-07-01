@@ -30,7 +30,7 @@ namespace Server.Controller
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Server Error");
+                return StatusCode(500, "Server Error" + ex.Message);
             }
         }
         
@@ -45,6 +45,27 @@ namespace Server.Controller
             catch (InvalidOperationException ex)
             {
                 return Unauthorized(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Server Error" + ex.Message);
+            }
+        }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout([FromBody] PlayerLogoutRequest req)
+        {
+            if (!Request.Headers.TryGetValue("Authorization", out var authHeader))
+                return BadRequest("No authorization header");
+                
+            const string prefix = "Session ";
+            if (!authHeader.ToString().StartsWith(prefix))
+                return BadRequest("Invalid session format.");
+            
+            try
+            {
+                await _authService.LogoutAsync(req.SessionId);
+                return Ok("Logout");
             }
             catch (Exception ex)
             {

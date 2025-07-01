@@ -7,4 +7,5 @@ public interface IAuthService
 {
     Task<PlayerLoginResponse> LoginAsync(PlayerLoginRequest req);
     Task<PlayerRegisterResponse> RegisterAsync(PlayerRegisterRequest req);
+    Task LogoutAsync(string sessionId);
 }
