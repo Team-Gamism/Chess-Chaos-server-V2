@@ -18,8 +18,8 @@ public class SessionRepository : ISessionRepository
     public async Task<string> CreateSessionAsync(PlayerAccountSession session)
     {
         const string sql = @"
-                    INSERT INTO player_account_session (session_id, account_id, created_at, expired_at)
-                    VALUES (@SessionId, @AccountId, @CreatedAt, @ExpiredAt);
+                    insert into player_account_session (session_id, account_id, created_at, expired_at)
+                    values (@SessionId, @AccountId, @CreatedAt, @ExpiredAt);
                     ";
 
         await using var connection = CreateConnection();
@@ -39,10 +39,10 @@ public class SessionRepository : ISessionRepository
     public async Task<bool> HasValidSessionAsync(string sessionId)
     {
         const string sql = @"
-                    SELECT COUNT(1)
-                    FROM player_account_session
-                    WHERE session_id = @SessionId
-                    AND expired_at > NOW();
+                    select COUNT(1)
+                    from player_account_session
+                    where session_id = @SessionId
+                    and expired_at > NOW();
                     ";
         
         await using var connection = CreateConnection();
@@ -50,5 +50,33 @@ public class SessionRepository : ISessionRepository
         
         var count = await connection.ExecuteScalarAsync<int>(sql, new { SessionId = sessionId });
         return count > 0;
+    }
+
+    public async Task<PlayerAccountSession?> GetSessionAsync(string sessionId)
+    {
+        const string sql = @"
+                    select session_id AS SessionId, account_id AS AccountId, created_at AS CreatedAt, expired_at AS ExpiredAt
+                    from player_account_session
+                    where session_id = @SessionId;
+                    ";
+        
+        await using var connection = CreateConnection();
+        await connection.OpenAsync();
+        
+        return await connection.QueryFirstOrDefaultAsync<PlayerAccountSession>(sql, new { SessionId = sessionId });
+    }
+
+    public async Task<bool> ExpireSessionAsync(string sessionId)
+    {
+        const string sql = @"
+                    update player_account_session
+                    set expired_at = NOW()
+                    where session_id = @SessionId;";
+        
+        await using var connection = CreateConnection();
+        connection.OpenAsync();
+        
+        var rows = await connection.ExecuteAsync(sql, new { SessionId = sessionId });
+        return rows > 0;
     }
 }
