@@ -9,12 +9,12 @@ namespace Server.Service;
 public class AuthService : IAuthService
 {
     private readonly IAccountRepository _accountRepository;
-    private readonly ISessionRepository _sessionRepository;
+    private readonly ISessionService _sessionService;
 
-    public AuthService(IAccountRepository accountRepository, ISessionRepository sessionRepository)
+    public AuthService(IAccountRepository accountRepository, ISessionService sessionService)
     {
         _accountRepository = accountRepository;
-        _sessionRepository = sessionRepository;
+        _sessionService = sessionService;
     }
     
     public async Task<PlayerLoginResponse> LoginAsync(PlayerLoginRequest req)
@@ -23,15 +23,7 @@ public class AuthService : IAuthService
         if (player == null || !BCrypt.Net.BCrypt.Verify(req.Password, player.Password))
             throw new UnauthorizedAccessException("Invalid credentials");
 
-        var session = new PlayerAccountSession
-        {
-            SessionId = Guid.NewGuid().ToString(),
-            AccountId = player.Id,
-            CreatedAt = DateTime.UtcNow,
-            ExpiredAt = DateTime.UtcNow.AddHours(1)
-        };
-        
-        var sessionId = await _sessionRepository.CreateSessionAsync(session);
+        var sessionId = await _sessionService.CreateSessionAsync(player.Id);
         
         return new PlayerLoginResponse
         {
