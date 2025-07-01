@@ -53,7 +53,7 @@ namespace Server.Controller
         }
 
         [HttpPost("logout")]
-        public async Task<IActionResult> Logout([FromBody] PlayerLogoutRequest req)
+        public async Task<IActionResult> Logout()
         {
             if (!Request.Headers.TryGetValue("Authorization", out var authHeader))
                 return BadRequest("No authorization header");
@@ -62,9 +62,11 @@ namespace Server.Controller
             if (!authHeader.ToString().StartsWith(prefix))
                 return BadRequest("Invalid session format.");
             
+            var sessionId = authHeader.ToString()[prefix.Length..];
+            
             try
             {
-                await _authService.LogoutAsync(req.SessionId);
+                await _authService.LogoutAsync(sessionId);
                 return Ok("Logout");
             }
             catch (Exception ex)
