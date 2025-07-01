@@ -1,7 +1,10 @@
-﻿namespace Server.Service.Interface;
+﻿using Server.Model.Account.Dto.Request;
+using Server.Model.Account.Dto.Response;
+
+namespace Server.Service.Interface;
 
 public interface IAuthService
 {
-    Task<string> LoginAsync(string playerId, string password);
-    Task<bool> RegisterAsync(string playerId, string password, string email);
+    Task<PlayerLoginResponse> LoginAsync(PlayerLoginRequest req);
+    Task<PlayerRegisterResponse> RegisterAsync(PlayerRegisterRequest req);
 }

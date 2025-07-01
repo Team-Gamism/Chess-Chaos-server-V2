@@ -1,4 +1,6 @@
-﻿using Server.Model.Account.Entity;
+﻿using Server.Model.Account.Dto.Request;
+using Server.Model.Account.Dto.Response;
+using Server.Model.Account.Entity;
 using Server.Repository.Interface;
 using Server.Service.Interface;
 
@@ -15,10 +17,10 @@ public class AuthService : IAuthService
         _sessionRepository = sessionRepository;
     }
     
-    public async Task<string> LoginAsync(string playerId, string password)
+    public async Task<PlayerLoginResponse> LoginAsync(PlayerLoginRequest req)
     {
-        var player = await _accountRepository.GetByPlayerIdAsync(playerId);
-        if (player == null || !BCrypt.Net.BCrypt.Verify(password, player.Password))
+        var player = await _accountRepository.GetByPlayerIdAsync(req.PlayerId);
+        if (player == null || !BCrypt.Net.BCrypt.Verify(req.Password, player.Password))
             throw new UnauthorizedAccessException("Invalid credentials");
 
         var session = new PlayerAccountSession
@@ -26,29 +28,44 @@ public class AuthService : IAuthService
             SessionId = Guid.NewGuid().ToString(),
             AccountId = player.Id,
             CreatedAt = DateTime.UtcNow,
-            ExpiredAt = DateTime.UtcNow.AddDays(1)
+            ExpiredAt = DateTime.UtcNow.AddHours(1)
         };
         
         var sessionId = await _sessionRepository.CreateSessionAsync(session);
         
-        return sessionId;
+        return new PlayerLoginResponse
+        {
+            PlayerId = player.PlayerId,
+            PlayerName = player.PlayerName,
+            SessionId = sessionId
+        };
     }
 
-    public async Task<bool> RegisterAsync(string playerId, string password, string email)
+    public async Task<PlayerRegisterResponse> RegisterAsync(PlayerRegisterRequest req)
     {
-        bool isExists = await _accountRepository.CheckExistsAsync(playerId, email);
+        bool isExists = await _accountRepository.CheckExistsAsync(req.PlayerId, req.Email);
         if (isExists)
-            return false;
+            throw new Exception("Player already exists");
         
-        var hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
+        var hashedPassword = BCrypt.Net.BCrypt.HashPassword(req.Password);
 
-        await _accountRepository.AddPlayerAccountAsync(new PlayerAccountData
+        var newPlayer = new PlayerAccountData
         {
-            PlayerId = playerId,
-            Password = hashedPassword,
-            Email = email
-        });
+            PlayerId = req.PlayerId,
+            PlayerName = req.PlayerName,
+            Email = req.Email,
+            CreatedAt = DateTime.UtcNow,
+        };
+        
+        await _accountRepository.AddPlayerAccountAsync(newPlayer);
 
-        return true;
+        return new PlayerRegisterResponse
+        {
+            Id = newPlayer.Id,
+            PlayerId = newPlayer.PlayerId,
+            Email = newPlayer.Email,
+            PlayerName = newPlayer.PlayerName,
+            CreatedAt = newPlayer.CreatedAt
+        };
     }
 }
