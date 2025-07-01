@@ -2,9 +2,9 @@
 
 public class PlayerRegisterResponse
 {
-    public string Id { get; set; } = string.Empty;
-    public string PlayerId { get; set; } = string.Empty;
-    public string Email { get; set; } = string.Empty;
-    public string PlayerName { get; set; } = string.Empty;
+    public string Id { get; set; } = null!;
+    public string PlayerId { get; set; } = null!;
+    public string Email { get; set; } = null!;
+    public string PlayerName { get; set; } = null!;
     public DateTime CreatedAt { get; set; }
 }

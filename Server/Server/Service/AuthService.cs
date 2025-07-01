@@ -23,6 +23,10 @@ public class AuthService : IAuthService
         if (player == null || !BCrypt.Net.BCrypt.Verify(req.Password, player.Password))
             throw new UnauthorizedAccessException("Invalid credentials");
 
+        var kstZone = TimeZoneInfo.FindSystemTimeZoneById("Korea Standard Time");
+        player.LastLoginAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, kstZone);
+        await _accountRepository.UpdatePlayerAsync(player);
+        
         var sessionId = await _sessionService.CreateSessionAsync(player.Id);
         
         return new PlayerLoginResponse
@@ -41,12 +45,16 @@ public class AuthService : IAuthService
         
         var hashedPassword = BCrypt.Net.BCrypt.HashPassword(req.Password);
 
+        var kstZone = TimeZoneInfo.FindSystemTimeZoneById("Korea Standard Time");
+        var createdAtKst = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, kstZone);
+
         var newPlayer = new PlayerAccountData
         {
             PlayerId = req.PlayerId,
             PlayerName = req.PlayerName,
+            Password = hashedPassword,
             Email = req.Email,
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = createdAtKst,
         };
         
         await _accountRepository.AddPlayerAccountAsync(newPlayer);

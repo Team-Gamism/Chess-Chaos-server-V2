@@ -8,4 +8,5 @@ public interface IAccountRepository
     Task AddPlayerAccountAsync(PlayerAccountData account);
     Task<PlayerAccountData?> GetByPlayerIdAsync(string id);
     Task<PlayerAccountData?> GetByEmailAsync(string email);
+    Task UpdatePlayerAsync(PlayerAccountData player);
 }

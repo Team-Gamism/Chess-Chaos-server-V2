@@ -48,8 +48,15 @@ public class AccountRepository : IAccountRepository
     public async Task<PlayerAccountData?> GetByPlayerIdAsync(string id)
     {
         const string sql = @"
-                    select * 
-                    from player_account_data 
+                    select
+                        id,
+                        player_id as PlayerId,
+                        player_name as PlayerName,
+                        password as Password,
+                        email as Email,
+                        created_at AS CreatedAt,
+                        last_login_at AS LastLoginAt
+                    from player_account_data
                     where player_id = @Id
                     limit 1";
         
@@ -61,7 +68,14 @@ public class AccountRepository : IAccountRepository
     public async Task<PlayerAccountData?> GetByEmailAsync(string email)
     {
         const string sql = @"
-                    select *
+                    select
+                        id,
+                        player_id as PlayerId,
+                        player_name as PlayerName,
+                        password as Password,
+                        email as Email,
+                        created_at AS CreatedAt,
+                        last_login_at AS LastLoginAt
                     from player_account_data
                     where email = @Email
                     limit 1";
@@ -69,5 +83,21 @@ public class AccountRepository : IAccountRepository
         await using var connection = CreateConnection();
         await connection.OpenAsync();
         return await connection.QueryFirstOrDefaultAsync<PlayerAccountData>(sql, new {Email = email});
+    }
+
+    public async Task UpdatePlayerAsync(PlayerAccountData player)
+    {
+        const string sql = @"
+                    update player_account_data
+                    set player_name = @PlayerName,
+                        password = @Password,
+                        email = @Email,
+                        last_login_at = @LastLoginAt
+                    where id = @Id";
+        
+        await using var connection = CreateConnection();
+        await connection.OpenAsync();
+        
+        await connection.ExecuteAsync(sql, player);
     }
 }

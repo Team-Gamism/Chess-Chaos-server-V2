@@ -48,7 +48,7 @@ namespace Server.Controller
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Server Error");
+                return StatusCode(500, "Server Error" + ex.Message);
             }
         }
     }
