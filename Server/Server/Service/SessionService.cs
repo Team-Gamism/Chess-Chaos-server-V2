@@ -15,14 +15,19 @@ public class SessionService : ISessionService
     
     public async Task<string> CreateSessionAsync(string accountId)
     {
+        await _sessionRepository.ExpireSessionAsync(accountId);
+        
+        var kstNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, 
+            TimeZoneInfo.FindSystemTimeZoneById("Asia/Seoul"));
+
         var session = new PlayerAccountSession
         {
             AccountId = accountId,
             SessionId = Guid.NewGuid().ToString(),
-            CreatedAt = DateTime.UtcNow,
-            ExpiredAt = DateTime.UtcNow.AddHours(1)
+            CreatedAt = kstNow,
+            ExpiredAt = kstNow.AddHours(1)
         };
-        
+
         return await _sessionRepository.CreateSessionAsync(session);
     }
 

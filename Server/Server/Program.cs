@@ -9,6 +9,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<ISessionRepository, SessionRepository>();
 builder.Services.AddScoped<ISessionService, SessionService>();
+builder.Services.AddScoped<IRankingService, RankingService>();
+builder.Services.AddScoped<IRankingRepository, RankingRepository>();
 
 builder.Services.AddControllers();
 

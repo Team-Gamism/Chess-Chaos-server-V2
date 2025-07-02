@@ -31,19 +31,19 @@ public class RankingRepository :  IRankingRepository
         return result;
     }
 
-    public async Task<PlayerRankingData> GetRankingDataAsync(string playerId)
+    public async Task<PlayerRankingData?> GetRankingDataAsync(string playerId)
     {
         const string sql = @"
                     select ranking as Ranking,
                         player_id as PlayerId,
                         player_score as PlayerScore
                     from player_ranking_data
-                    where player_id = @player_id;";
+                    where player_id = @PlayerId;";
         
         await using var connection = CreateConnection();
         await connection.OpenAsync();
         
-        var result = await connection.QueryFirstOrDefaultAsync<PlayerRankingData>(sql, new { player_id = playerId });
+        var result = await connection.QueryFirstOrDefaultAsync<PlayerRankingData>(sql, new { PlayerId = playerId });
         return result;
     }
 
@@ -52,7 +52,7 @@ public class RankingRepository :  IRankingRepository
         const string sql = @"
                     insert into player_ranking_data
                     (ranking, player_id, player_score)
-                    values (@ranking, @player_id, @player_score);";
+                    values (@Ranking, @PlayerId, @PlayerScore);";
         
         await using var connection = CreateConnection();
         await connection.OpenAsync();
@@ -60,16 +60,29 @@ public class RankingRepository :  IRankingRepository
         await connection.ExecuteAsync(sql, data);
     }
 
-    public async Task UpdatePlayerRankingAsync(string playerId, int newScore)
+    public async Task UpdatePlayerRankingByNewScoreAsync(string playerId, int newScore)
     {
         const string sql = @"
                     update player_ranking_data
-                    set player_score = @newScore
-                    where player_id = @playerId;";
+                    set player_score = @NewScore
+                    where player_id = @PlayerId;";
 
         await using var connection = CreateConnection();
         await connection.OpenAsync();
 
-        await connection.ExecuteAsync(sql, new { playerId, newScore });
+        await connection.ExecuteAsync(sql, new { PlayerId = playerId, NewScore = newScore });
+    }
+    
+    public async Task UpdatePlayerRankingByNewRankAsync(string playerId, int newRanking)
+    {
+        const string sql = @"
+        update player_ranking_data
+        set ranking = @NewRanking
+        where player_id = @PlayerId;";
+
+        await using var connection = CreateConnection();
+        await connection.OpenAsync();
+
+        await connection.ExecuteAsync(sql, new { PlayerId = playerId, NewRanking = newRanking });
     }
 }

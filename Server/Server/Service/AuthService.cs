@@ -39,7 +39,7 @@ public class AuthService : IAuthService
 
     public async Task<PlayerRegisterResponse> RegisterAsync(PlayerRegisterRequest req)
     {
-        bool isExists = await _accountRepository.CheckExistsAsync(req.PlayerId, req.Email);
+        bool isExists = await _accountRepository.CheckExistsAsync(req.PlayerId);
         if (isExists)
             throw new Exception("Player already exists");
         
