@@ -18,10 +18,25 @@ namespace Server.Controller
         }
 
         [HttpPost]
-        public async Task<ActionResult<AddPlayerRankingResponse>> AddPlayerRanking([FromBody] AddPlayerRankingRequest? req)
+        public async Task<ActionResult<AddPlayerRankingResponse>> AddPlayerRanking(
+            [FromBody] AddPlayerRankingRequest? req,
+            [FromServices] ISessionService sessionService)
         {
             if (req == null || string.IsNullOrEmpty(req.PlayerId))
                 return BadRequest("PlayerId is required.");
+            
+            if (!Request.Headers.TryGetValue("Authorization", out var authHeader))
+                return BadRequest("No authorization header");
+
+            const string prefix = "Session ";
+            var authHeaderValue = authHeader.ToString();
+            if (!authHeaderValue.StartsWith(prefix))
+                return BadRequest("Invalid session format.");
+
+            var sessionId = authHeaderValue[prefix.Length..];
+            
+            if (!await sessionService.ValidateSessionAsync(sessionId))
+                return Unauthorized("Session is not valid.");
 
             try
             {
@@ -59,11 +74,11 @@ namespace Server.Controller
             try
             {
                 var rankings = await _rankingService.GetAllRankingsAsync();
-                var datas = rankings.ToList();
-                var response = new
+                var data = rankings.ToList();
+                var response = new AllPlayerRankingResponse
                 {
-                    Count = datas.Count(),
-                    Rankings = datas
+                    Count = data.Count(),
+                    Rankings = data
                 };
                 
                 return Ok(response);
@@ -75,18 +90,33 @@ namespace Server.Controller
         }
 
         [HttpGet("{playerId}")]
-        public async Task<IActionResult> GetRankingByPlayerId(string playerId)
+        public async Task<IActionResult> GetRankingByPlayerId(
+            string playerId,
+            [FromServices] ISessionService sessionService)
         {
             if (string.IsNullOrEmpty(playerId))
                 return BadRequest("PlayerId is required.");
 
+            if (!Request.Headers.TryGetValue("Authorization", out var authHeader))
+                return BadRequest("No authorization header");
+
+            const string prefix = "Session ";
+            var authHeaderValue = authHeader.ToString();
+            if (!authHeaderValue.StartsWith(prefix))
+                return BadRequest("Invalid session format.");
+
+            var sessionId = authHeaderValue[prefix.Length..];
+            
+            if (!await sessionService.ValidateSessionAsync(sessionId))
+                return Unauthorized("Session is not valid.");
+            
             try
             {
                 var ranking = await _rankingService.GetRankingByPlayerIdAsync(playerId);
                 if (ranking == null)
                     return NotFound("Player ranking is not found.");
 
-                var response = new
+                var response = new PlayerRankingResponse
                 {
                     PlayerId = ranking.PlayerId,
                     PlayerScore = ranking.PlayerScore,
